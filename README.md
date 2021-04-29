@@ -189,9 +189,6 @@ There are two types of sequencers : uvm_sequencer and uvm_push_sequencer
 
     In sequencer class just extends from uvm_sequencer which is parm class #(pass_ transaction_class)
 
-
-
-
 ---
 
 ## Difference between m_sequencer and p_sequencer
@@ -216,6 +213,8 @@ p_sequencer is defined using the macro
 ```
 
 ![uvm_sequence_driver_handshake](file:///home/vinodreddy/Desktop/Router%201x3%20project/router%201x3%20verification/codev3/readme/assets/uvm_sequencer_agt.png "uvm_sequencer connection")
+
+---
 
 ## Driver
 
@@ -242,6 +241,17 @@ There are different driver methods to keep communication cool, they are
 **put**
 
     The put() method is non-blocking and is used to place an RSP sequence_item in the sequencer.
+
+---
+
+## Monitor
+
+    A UVM monitor is responsible for capturing signal activity from the design interface and translate it into transaction level data objects that can be sent to other components. 
+    
+**monitor is derived from uvm_monitor class, and it has following features**
+- Collect bus or signal information through a virtual interface.
+- Collected data can be used for protocol checking and coverage.
+- Collected data is exported via an analysis port.
 
 
 
