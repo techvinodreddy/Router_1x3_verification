@@ -57,6 +57,7 @@ After creating write and read transaction class we need to pass it **uvm_sequenc
 
 
 
+
     A sequence generates a series of sequence_item’s and sends it to the driver via sequencer, Sequence is written by extending the uvm_sequence.
 
 - A uvm_sequence is derived from an uvm_sequence_item.
@@ -95,6 +96,8 @@ After creating write and read transaction class we need to pass it **uvm_sequenc
   Below block diagram shows the order in which the methods will get called on calling the start of a sequence.
 
   ![uvm_sequence_calbacks](file:///home/vinodreddy/Desktop/Router%201x3%20project/router%201x3%20verification/codev3/readme/assets/uvm_sequence_callback.png "uvm_sequence_calbacks")
+
+
 
     mid_do and post_do are functions, All other are tasks.
 ---
@@ -169,7 +172,7 @@ The handshake between the sequence, sequencer and driver to send the sequence_it
 ---
 ## virtual sequence
 
-# [ToDo]
+ [ToDo]
 
 ---
 ## Sequencer
@@ -213,6 +216,33 @@ p_sequencer is defined using the macro
 ```
 
 ![uvm_sequence_driver_handshake](file:///home/vinodreddy/Desktop/Router%201x3%20project/router%201x3%20verification/codev3/readme/assets/uvm_sequencer_agt.png "uvm_sequencer connection")
+
+## Driver
+
+A driver is written by extending the uvm_driver.
+
+- uvm_driver is inherited from uvm_component, Methods and TLM port (seq_item_port and seq_item_export) are defined for communication between sequencer and driver.
+
+- The uvm_driver is a parameterized class and it is parameterized with the type of the request sequence_item and the type of the response sequence_item.
+
+There are different driver methods to keep communication cool, they are
+
+**get_next_item**
+
+    This method blocks until a REQ sequence_item is available in the sequencer.
+
+**try_next_item**
+
+    This is a non-blocking variant of the get_next_item() method. It will return a null pointer if there is no REQ sequence_item available in the sequencer.
+
+**item_done**
+
+    The non-blocking item_done() method completes the driver-sequencer handshake and it should be called after a get_next_item() or a successful try_next_item() call.
+
+**put**
+
+    The put() method is non-blocking and is used to place an RSP sequence_item in the sequencer.
+
 
 
 
