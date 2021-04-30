@@ -253,6 +253,95 @@ There are different driver methods to keep communication cool, they are
 - Collected data can be used for protocol checking and coverage.
 - Collected data is exported via an analysis port.
 
+---
+
+## Agent
+
+- A user-defined agent is extended from uvm_agent, uvm_agent is inherited by uvm_component.
+
+- An agent typically contains a driver, a sequencer, and a monitor.
+
+- Agents can be configured either active or passive.
+
+**Active Agent**  
+
+Active agents generate stimulus and drive to DUT,
+An active agent shall consists of all the three components driver, sequencer, and monitor.
+
+**Passive Agent**
+
+Passive agents sample DUT signals but do not drive them.
+A passive agent consists of only the monitor.
+
+An agent can be configured as ACTIVE/PASSIVE by using a set config method, the default agent will be ACTIVE. the set config can be done in the env or test.
+
+```verilog
+set_config_int("path_to_agent", "is_active", UVM_ACTIVE);
+set_config_int("path_to_agent", "is_active", UVM_PASSIVE);
+```
+
+**get_is_active()** returns UVM_ACTIVE if the agent is acting as an active agent and UVM_PASSIVE if the agent acting as a passive agent.
+
+## Writing UVM Agent
+
+**An agent is written by extending UVM_agent**
+
+```verilog
+class mem_agent extends uvm_agent;
+ 
+  // UVM automation macros for general components
+  `uvm_component_utils(mem_agent)
+ 
+  // constructor
+  function new (string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction : new
+ 
+endclass : mem_agent
+```
+
+**Declare driver, sequencer and monitor instance**
+```verilog
+//declaring agent components
+mem_driver    driver;
+mem_sequencer sequencer;
+mem_monitor   monitor;
+```
+**Depending on Agent type, create agent components in the build phase,driver and sequencer will be created only for the active agent***
+```verilog
+// build_phase
+function void build_phase(uvm_phase phase);
+  super.build_phase(phase);
+ 
+  if(get_is_active() == UVM_ACTIVE) begin
+    driver = mem_driver::type_id::create("driver", this);
+    sequencer = mem_sequencer::type_id::create("sequencer", this);
+  end
+
+ 
+  monitor = mem_monitor::type_id::create("monitor", this);
+endfunction : build_phase
+```
+
+**Connect the driver seq_item_port to sequencer seq_item_export for communication between driver and sequencer in the connect phase**
+```verilog
+// connect_phase
+function void connect_phase(uvm_phase phase);
+  if(get_is_active() == UVM_ACTIVE) begin
+    driver.seq_item_port.connect(sequencer.seq_item_export);
+  end
+endfunction : connect_phase
+```
+
+---
+
+## Agent Top
+
+**It is container of agent's** for example there are three agent's  in order to controll them eeasily we want to put it in some container and this is termed as **Agent Top.**
+
+    It is extended from uvm_top
+
+---
 
 
 
