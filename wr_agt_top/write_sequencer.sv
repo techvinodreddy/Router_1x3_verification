@@ -1,5 +1,5 @@
 /* ---------------------- write sequencer class ---------------------------- */
-class write_sequencer extends uvm_sequencer #(write_xtn);
+class write_sequencer extends uvm_sequencer #(write_transaction);
   `uvm_component_utils(write_sequencer);
   extern function new(string name="write_sequencer",uvm_component parent);
 endclass

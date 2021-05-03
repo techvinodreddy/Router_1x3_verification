@@ -25,7 +25,7 @@ endfunction
 
 /* ---------------------- task body ---------------------------- */
 task small_packet::body;
-	req=write_xtn::type_id::create("req");
+	req=write_transaction::type_id::create("req");
 	start_item(req);
 	assert( req.randomize with {header[7:2] inside { [1:15] && header[1:0] == addr; } } );
 	finish_item(req);
