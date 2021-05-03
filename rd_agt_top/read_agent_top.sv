@@ -23,6 +23,5 @@ function void read_agent_top::build_phase(uvm_phase phase);
 	read_agt=new[cfg.no_of_read_agent];
 
 	foreach(read_agt[i]) read_agt[i]=read_agent::type_id::create($sformatf("read_agt[%0d]",i),this);
-  
-endfunction
 
+endfunction
