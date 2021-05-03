@@ -12,6 +12,39 @@ class scoreboard extends uvm_scoreboard;
     write_transaction write_cov_data;
     read_transaction read_cov_data;
 
+    covergroup router_fcov1;
+        option.per_instance=1;
+        //Address
+        CHANNEL : coverpoint write_cov_data.header [1:0] { bins low = {2'b00};
+                                                           bins mid1 = {2'b01};
+                                                           bins mid2 = {2'b10};  }
+
+        //payload size
+        PAYLOAD_SIZE : coverpoint write_cov_data.header [7:0] {
+                                                              bins small_packet = {[1:15]};
+                                                              bins medium_packet = {[16:30]};
+                                                              bins large_packet = {[31:63]};
+
+        CHANNEL_X_PAYLAOD_SIZE : cross CHANNEL,PAYLOAD_SIZE;
+    endgroup
+
+    covergroup router_fcov2;
+      option.per_instance = 1;
+
+      //Address
+      CHANNEL : coverpoint read_cov_data.header[1:0] {        bins low = {2'b00};
+                                                              bins mid1 ={2'b01};
+                                                              bins mid2 ={2'b10};     }
+
+      //payload size
+      PAYLOAD_SIZE : coverpoint read_cov_data.header[7:0] {   bins small_packet = {[1:15]};
+                                                              bins medium_pakcet = {[16:30]};
+                                                              bins large_packet ={[31:63]};   }
+
+      CHANNEL_X_PAYLOAD_SIZE: cross CHANNEL,PAYLOAD_SIZE;
+
+    endgroup
+
     extern function new(string name="scoreboard",uvm_component parent);
     extern function void build_phase(uvm_phase phase);
     extern task run_phase(uvm_phase);
@@ -21,8 +54,6 @@ endclass
 /* ---------------------------------- constructor -------------------------------------------------- */
 function scoreboard::new(string name="scoreboard",uvm_component parent);
 	super.new(name,parent);
-  write_cov_data = new();
-  read_cov_data = new();
 endfunction
 
 /* ---------------------------------- build phase -------------------------------------------------- */
@@ -30,19 +61,19 @@ function void scoreboard::build_phase(uvm_phase phase);
 	if(!uvm_config_db #(env_config)::get(this,"","env_config",cfg))
 		`uvm_fatal("scoreboard","cannot get config data");
 
-	tlm_write=new("tlm_write",this);
+	tlm_write=new[cfg.no_of_write_agent];
   tlm_read=new[cfg.no_of_read_agent];
-	foreach(tlm_read[i]) tlm_read[i]=new($sformatf("tlm_read[%0d]",i),this);
+  foreach(tlm_write[i]) tlm_write[i] = new($sformatf("tlm_write[%0d]",i),this);
+	foreach(tlm_read[i]) tlm_read[i] = new($sformatf("tlm_read[%0d]",i),this);
 	super.build_phase(phase);
 endfunction
 
 /* ---------------------------------- run phase -------------------------------------------------- */
 task scoreboard::run_phase(uvm_phase);
 	fork
-		forever 
-      begin
-			  tlm_write.get(w_xtn);
-			end
+    begin
+      forever tlm_write.get(w_xtn);  
+    end
 
 		forever 
       begin

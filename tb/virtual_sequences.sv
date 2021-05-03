@@ -33,8 +33,10 @@ endtask
 class virtual_small_packet extends write_sequences;
   `uvm_object_utils(virtual_small_packet);
   bit [1:0]addr;  // it is used inside task body
-	virtual_sequencer v_seqr;
-  write_sequencer w_seqr[];
+  
+  write_sequence w_seq[];
+  read_sequence r_seq[];
+
   extern function new(string name="virtual_small_packet");
   extern task body;
 endclass
@@ -44,33 +46,23 @@ function virtual_small_packet::new(string name ="virtual_small_packet");
 	super.new(name);
 endfunction
 
-
-/* ---------------------- task body ---------------------------- */
-task virtual_small_packet::body;
-	req=write_xtn::type_id::create("req");
-	start_item(req);
-	assert( req.randomize with {header[7:2] inside { [1:15] && header[1:0] == addr; } } );
-	finish_item(req);
-endtask
-
 task router_virtual_sequence_c1::body;
 	super.body;
-	w_seq=router_wr_seq_c1::type_id::create("write_small_packet");
-	r_seq=new[cfg.no_of_clients];
-	foreach(r_seq[i])
-	r_seq[i]=router_rd_seq_c1::type_id::create($sformatf("RESQ[%0d]",i));
+	w_seq=small_packet::type_id::create("w_seq");
+	r_seq=new[cfg.no_of_read_agent];
+	foreach(r_seq[i]) r_seq[i] = read_sequences_1::type_id::create($sformatf("r_seq[%0d]",i));
 	fork:a
-		begin
-		foreach(w_seqr[i])
-		w_seq.start(w_seqr[i]);
+		begin		// write thread 
+		  foreach(w_seqr[i]) w_seq.start(w_seqr[i]);
 		end
-		begin
-		fork:b
-		r_seq[0].start(r_seqr[0]);
-		r_seq[1].start(r_seqr[1]);
-		r_seq[2].start(r_seqr[2]);
-		join_any
-		disable b;
+
+		begin		// read thread
+		  fork:b
+		  	r_seq[0].start(r_seqr[0]);
+			r_seq[1].start(r_seqr[1]);
+			r_seq[2].start(r_seqr[2]);
+		  join_any
+		  disable b;
 		end
 	join
 
